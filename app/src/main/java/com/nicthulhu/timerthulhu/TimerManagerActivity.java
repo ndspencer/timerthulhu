@@ -1,9 +1,13 @@
 package com.nicthulhu.timerthulhu;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,6 +18,8 @@ import android.widget.LinearLayout;
 import android.support.v7.widget.CardView;
 
 import java.util.ArrayList;
+
+import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 
 
 public class TimerManagerActivity extends Activity {
@@ -125,6 +131,16 @@ public class TimerManagerActivity extends Activity {
             InitCheckBox(saturday, "Saturday", timerOptions.saturday);
             InitCheckBox(sunday, "Sunday", timerOptions.sunday);
 
+            Button save = new Button(context);
+            save.setText("Save");
+            top.addView(save);
+            save.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    UpdateTimerOptions();
+                    SetTimer();
+                }
+            });
         }
 
         void InitCheckBox(CheckBox box, String label, boolean checked){
@@ -152,7 +168,7 @@ public class TimerManagerActivity extends Activity {
             top.removeView(sunday);
         }
 
-        void UpdateTimerOptions(){{
+        void UpdateTimerOptions(){
             timerOptions.monday = monday.isChecked();
             timerOptions.tuesday = tuesday.isChecked();
             timerOptions.wednesday = wednesday.isChecked();
@@ -161,6 +177,23 @@ public class TimerManagerActivity extends Activity {
             timerOptions.saturday = saturday.isChecked();
             timerOptions.sunday = sunday.isChecked();
         }
+
+        void SetTimer() {
+            Log.d("SetTimer", "SetTimer() called");
+            AlarmManager manager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+
+            Intent newAlarmIntent = new Intent(TimerManagerActivity.this, AlarmReceiver.class);
+            //TimerManagerActivity.this.sendBroadcast(newAlarmIntent);
+
+            PendingIntent newAlarmPendingIntent = PendingIntent.getBroadcast(
+                    TimerManagerActivity.this,
+                    0,
+                    newAlarmIntent,
+                    FLAG_UPDATE_CURRENT);
+
+            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                    System.currentTimeMillis()+5000,
+                    newAlarmPendingIntent);
         }
     }
 }
